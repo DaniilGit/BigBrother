@@ -1,0 +1,2 @@
+D:\Данил\Programming\IS\3 course\OS\BigBrother\server\Debug\server.exe
+D:\Данил\Programming\IS\3 course\OS\BigBrother\server\Debug\server.pdb
