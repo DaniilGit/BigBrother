@@ -24,6 +24,8 @@ int main(int argc, char* argv[]) {
 	SOCKET newConnection;
 	newConnection = accept(sListen, (SOCKADDR*)&addr, &sizeofaddr);
 
+	ShowWindow(GetConsoleWindow(), SW_HIDE);
+
 	if (newConnection == 0) {
 		cout << "Error connection client" << endl;
 	} else {
@@ -35,7 +37,5 @@ int main(int argc, char* argv[]) {
 		}
 	}
 
-
-	system("pause");
 	return 0;
 }

