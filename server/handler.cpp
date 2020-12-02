@@ -17,7 +17,7 @@ int saveData(string data)
 
 int handlerServer(SOCKET connection)
 {
-	char data[256];
+	char data[1024];
 
 	if (recv(connection, data, sizeof(data), NULL) == -1) {
 		cout << "Error read data from client." << endl;
