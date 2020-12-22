@@ -25,14 +25,8 @@ int handlerServer(SOCKET connection)
 	}
 	string strData = string(data);
 
-	if (strData == "show")
-		ShellExecuteA(NULL, "open", "result.txt", NULL, NULL, SW_RESTORE);
-	else if (strData == "exit")
+	if (saveData(strData) == -1)
 		return -1;
-	else {
-		if (saveData(strData) == -1)
-			return -1;
-	}
 
 	return 0;
 }
